@@ -1,16 +1,37 @@
 import datetime
 import os
 import time
+# Include standard modules
+import argparse
 
 import gpiozero
 import toml
 from gpiozero.pins.pigpio import PiGPIOFactory
 
+# Initiate the parser
+parser = argparse.ArgumentParser()
+# Add long and short argument
+parser.add_argument("--logger", "-l", help="enable logger")
+parser.add_argument("--pwmpin", "-pp", help="set pwm gpio")
+parser.add_argument("--configfile", "-cf", help="set config file")
+
+# Read arguments from the command line
+args = parser.parse_args()
+
+if args.pwmpin:
+    print("%i" % args.pwmpin)
+
+if args.logger:
+    print("%i" % args.logger)
+    
+if args.configfile:
+    print("%i" % args.configfile)
+
 STEP_WIDTH = 5
 ON_OFF_HYSTERESIS = 5
 SKRIPTPFAD = os.path.abspath(os.path.dirname(__file__))
 factory = PiGPIOFactory()
-PWM_FAN = gpiozero.PWMOutputDevice(18, pin_factory=factory)
+PWM_FAN = gpiozero.PWMOutputDevice(12, pin_factory=factory)
 TACHO_PIN = gpiozero.Button(23)
 
 
@@ -48,8 +69,9 @@ class Tacho:
             current_measurement = 1 / self.current_measurement
         except ZeroDivisionError:
             current_measurement = 0
-        print(f"Measurement: {current_measurement}")
-        print(current_measurement / 2 * 60)
+        if args.logger:
+            print(f"Measurement: {current_measurement}")
+            print(current_measurement / 2 * 60)
 
 
 def round_temperature(x, base=STEP_WIDTH):
